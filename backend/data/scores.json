@@ -1,0 +1,47 @@
+[
+    {
+        "awayTeam": "PHI",
+        "awayTeamLogo": "Philadelphia_Flyers.png",
+        "homeTeam": "NYI",
+        "homeTeamLogo": "New_York_Islanders.png",
+        "awayScore": "0",
+        "homeScore": "25",
+        "status": "Final"
+    },
+    {
+        "awayTeam": "DET",
+        "awayTeamLogo": "Detroit_Red_Wings.png",
+        "homeTeam": "MIN",
+        "homeTeamLogo": "Minnesota_Wild.png",
+        "awayScore": "4",
+        "homeScore": "7",
+        "status": "Final"
+    },
+    {
+        "awayTeam": "TOR",
+        "awayTeamLogo": "Toronto_Maple_Leafs.png",
+        "homeTeam": "SEA",
+        "homeTeamLogo": "Seattle_Kraken.png",
+        "awayScore": "6",
+        "homeScore": "2",
+        "status": "Final"
+    },
+    {
+        "awayTeam": "CHI",
+        "awayTeamLogo": "Chicago_Blackhawks.png",
+        "homeTeam": "WPG",
+        "homeTeamLogo": "Winnipeg_Jets.png",
+        "awayScore": "3",
+        "homeScore": "1",
+        "status": "Final"
+    },
+    {
+        "awayTeam": "EDM",
+        "awayTeamLogo": "Edmonton_Oilers.png",
+        "homeTeam": "SJS",
+        "homeTeamLogo": "San_Jose_Sharks.png",
+        "awayScore": "3",
+        "homeScore": "0",
+        "status": "Final"
+    }
+]
