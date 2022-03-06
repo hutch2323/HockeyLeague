@@ -6,6 +6,30 @@ import { Helmet } from 'react-helmet';
 import Alert from 'react-bootstrap/Alert';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Table } from 'react-bootstrap'
+
+//Comparer Function    
+function GetSortOrderAscending(prop) {    
+    return function(a, b) {    
+        if (a[prop] > b[prop]) {    
+            return 1;    
+        } else if (a[prop] < b[prop]) {    
+            return -1;    
+        }    
+        return 0;    
+    }    
+}  
+
+function GetSortOrderDescending(prop) {    
+    return function(a, b) {    
+        if (a[prop] < b[prop]) {    
+            return 1;    
+        } else if (a[prop] > b[prop]) {    
+            return -1;    
+        }    
+        return 0;    
+    }    
+}  
 
 function NavigationBar({scores}){
     return(
@@ -34,7 +58,7 @@ function NavigationBar({scores}){
                                         <Link className="nav-item nav-link active" to="/">Scores</Link>
                                     </li>
                                     <li className="nav-item fs-5">
-                                        <Link className="nav-item nav-link active" to="/">Standings</Link>
+                                        <Link className="nav-item nav-link active" to="/standings">Standings</Link>
                                     </li>
                                     <li className="nav-item fs-5">
                                         <Link className="nav-item nav-link active" to="/">Stats</Link>
@@ -64,6 +88,172 @@ export function Home({scores}){
             <NavigationBar scores={scores}/>
         </>
     );
+}
+
+export function Standings({standings, scores}){
+    const [standingsView, setStandingsView] = useState("points")
+    const [sortOrderTeam, setSortOrderTeam] = useState("descending");
+    const [sortOrderGP, setSortOrderGP] = useState("descending");
+    const [sortOrderWins, setSortOrderWins] = useState("descending");
+    const [sortOrderLosses, setSortOrderLosses] = useState("descending");
+    const [sortOrderOTL, setSortOrderOTL] = useState("descending");
+    const [sortOrderPoints, setSortOrderPoints] = useState("descending");
+    const [sortOrderGF, setSortOrderGF] = useState("descending");
+    const [sortOrderGA, setSortOrderGA] = useState("descending");
+    const [teamStandings, setTeamStandings] = useState([...standings]);
+    return(
+        <>
+        
+            <div>
+                <Helmet>
+                    <title>Team Standings</title>
+                </Helmet>
+            </div>
+            <NavigationBar scores={scores}/>
+            <Table striped bordered hover>
+                {/* <tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>OTL</th><th>PTS</th><th>GF</th><th>GA</th></tr> */}
+                <tbody>
+                    <tr>
+                        <th></th>
+                        <th onClick={() => {
+                            setStandingsView("team");
+                            if (sortOrderTeam === "descending"){
+                                setTeamStandings(teamStandings.sort(GetSortOrderDescending("city")));
+                                setSortOrderTeam("ascending")
+                            } else {
+                                setTeamStandings(teamStandings.sort(GetSortOrderAscending("city")));
+                                setSortOrderTeam("descending")
+                            }
+                        }}
+                        className={standingsView==="team" ? "sortedColumn" : null}
+                        >
+                            Team
+                        </th>
+                        <th onClick={() => {
+                            setStandingsView("gp");
+                            if (sortOrderGP === "descending"){
+                                setTeamStandings(teamStandings.sort(GetSortOrderDescending("GP")));
+                                setSortOrderGP("ascending")
+                            } else {
+                                setTeamStandings(teamStandings.sort(GetSortOrderAscending("GP")));
+                                setSortOrderGP("descending")
+                            }
+                        }}
+                        className={standingsView==="gp" ? 'sortedColumn' : null}
+                        >
+                            GP
+                        </th>
+                        <th onClick={() => {
+                            setStandingsView("wins");
+                            if (sortOrderWins === "descending"){
+                                setTeamStandings(teamStandings.sort(GetSortOrderDescending("wins")));
+                                setSortOrderWins("ascending")
+                            } else {
+                                setTeamStandings(teamStandings.sort(GetSortOrderAscending("wins")));
+                                setSortOrderWins("descending")
+                            }
+                        }}
+                        className={standingsView==="wins" ? 'sortedColumn' : null}
+                        >
+                            W
+                        </th>
+                        <th onClick={() => {
+                            setStandingsView("losses");
+                            if (sortOrderLosses === "descending"){
+                                setTeamStandings(teamStandings.sort(GetSortOrderDescending("losses")));
+                                setSortOrderLosses("ascending")
+                            } else {
+                                setTeamStandings(teamStandings.sort(GetSortOrderAscending("losses")));
+                                setSortOrderLosses("descending")
+                            }
+                        }}
+                        className={standingsView==="losses" ? 'sortedColumn' : null}
+                        >
+                            L
+                        </th>
+                        <th onClick={() => {
+                            setStandingsView("otl");
+                            if (sortOrderOTL === "descending"){
+                                setTeamStandings(teamStandings.sort(GetSortOrderDescending("overtimeLosses")));
+                                setSortOrderOTL("ascending")
+                            } else {
+                                setTeamStandings(teamStandings.sort(GetSortOrderAscending("overtimeLosses")));
+                                setSortOrderOTL("descending")
+                            }
+                        }}
+                        className={standingsView==="otl" ? 'sortedColumn' : null}
+                        >
+                            OTL
+                        </th>
+                        <th 
+                        onClick={() => {
+                            setStandingsView("points");
+                            if (sortOrderPoints === "descending"){
+                                setTeamStandings(teamStandings.sort(GetSortOrderDescending("Points")));
+                                setSortOrderPoints("ascending")
+                            } else {
+                                setTeamStandings(teamStandings.sort(GetSortOrderAscending("Points")));
+                                setSortOrderPoints("descending")
+                            }
+                        }}
+                        className={standingsView==="points" ? 'sortedColumn' : null}
+                        >
+                            PTS
+                        </th>
+                        <th onClick={() => {
+                            setStandingsView("gf");
+                            if (sortOrderGF === "descending"){
+                                setTeamStandings(teamStandings.sort(GetSortOrderDescending("goalsFor")));
+                                setSortOrderGF("ascending")
+                            } else {
+                                setTeamStandings(teamStandings.sort(GetSortOrderAscending("goalsFor")));
+                                setSortOrderGF("descending")
+                            }
+                        }}
+                        className={standingsView==="gf" ? 'sortedColumn' : null}
+                        >
+                            GF
+                        </th>
+                        <th onClick={() => {
+                            setStandingsView("ga");
+                            if (sortOrderGA === "descending"){
+                                setTeamStandings(teamStandings.sort(GetSortOrderDescending("goalsAgainst")));
+                                setSortOrderGA("ascending")
+                            } else {
+                                setTeamStandings(teamStandings.sort(GetSortOrderAscending("goalsAgainst")));
+                                setSortOrderGA("descending")
+                            }
+                        }}
+                        className={standingsView==="ga" ? 'sortedColumn' : null}
+                        >
+                            GA
+                        </th>
+                    </tr>
+                    {teamStandings.map((team, i) => {return (
+                        <tr key={i}>
+                            <td>{i + 1}</td>
+                            <StandingsRow key={i} team={team} standingsView={standingsView}/>
+                        </tr>                        
+                    )})}
+                </tbody>
+            </Table>
+        </>
+    );
+}
+
+export function StandingsRow({team, standingsView}){
+    return(
+        <>
+            <td style={{color:"white", backgroundColor:team.primaryColor}}>{team.city} {team.name}</td>
+            <td className={standingsView==="gp" ? 'sortedColumnData' : null}>{team.GP}</td>
+            <td className={standingsView==="wins" ? 'sortedColumnData' : null}>{team.wins}</td>
+            <td className={standingsView==="losses" ? 'sortedColumnData' : null}>{team.losses}</td>
+            <td className={standingsView==="otl" ? 'sortedColumnData' : null}>{team.overtimeLosses}</td>
+            <td className={standingsView==="points" ? 'sortedColumnData' : null}>{team.Points}</td>
+            <td className={standingsView==="gf" ? 'sortedColumnData' : null}>{team.goalsFor}</td>
+            <td className={standingsView==="ga" ? 'sortedColumnData' : null}>{team.goalsAgainst}</td>
+        </>
+    )
 }
 
 export function About({scores}){
