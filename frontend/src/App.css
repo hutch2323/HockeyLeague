@@ -36,3 +36,14 @@
     transform: rotate(360deg);
   }
 }
+
+.sortedColumn{
+  color:white !important;
+  font-weight: bold;
+  background-color: #343a40 !important;
+}
+
+.sortedColumnData{
+  color:white !important;
+  background-color: #6c757d !important;
+}

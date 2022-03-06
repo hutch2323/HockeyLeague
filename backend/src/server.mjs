@@ -13,13 +13,6 @@ import cors from 'cors';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-let scores = undefined;
-fs.readFile("./data/scores.json", "utf8", (err, data) => {
-    console.log(err)
-    console.log(data)
-    scores = data;
-});
-
 const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, '/build')));
@@ -27,6 +20,23 @@ app.use(express.json());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }))
+
+let scores = undefined;
+fs.readFile("./data/scores.json", "utf8", (err, data) => {
+    console.log(err)
+    console.log(data)
+    scores = data;
+});
+
+// let standings = undefined;
+// fs.readFile("./data/standings.json", "utf8", (err, data) => {
+//     // console.log(err)
+//     // console.log(data)
+//     let metro = data;
+//     standings = data;
+//     console.log(standings.records);
+// });
+
 
 const user = 'root';
 const host = 'localhost';
@@ -40,35 +50,35 @@ const db = mysql.createConnection({
     database: database
 });
 
-app.post('/api/create', async (req, res) => {
-    // let name = "Marcus Hutchings";
-    // let age = 32;
-    // let country = "Canada";
-    // let position = "Software Developer";
-    // let wage = 50000;
-    let name = req.body.name;
-    let age = req.body.age;
-    let country = req.body.country;
-    let position = req.body.position;
-    let wage = req.body.wage
+// app.post('/api/create', async (req, res) => {
+//     // let name = "Marcus Hutchings";
+//     // let age = 32;
+//     // let country = "Canada";
+//     // let position = "Software Developer";
+//     // let wage = 50000;
+//     let name = req.body.name;
+//     let age = req.body.age;
+//     let country = req.body.country;
+//     let position = req.body.position;
+//     let wage = req.body.wage
 
-    try {
+//     try {
 
-        const result = db.query(
-            "INSERT INTO employees (name, age, country, position, wage) VALUES (?,?,?,?,?)", 
-            [name, age, country, position, wage], 
-            (err, result) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    res.send("Values inserted");
-                }
-            }
-        );
-    } catch (error){
+//         const result = db.query(
+//             "INSERT INTO employees (name, age, country, position, wage) VALUES (?,?,?,?,?)", 
+//             [name, age, country, position, wage], 
+//             (err, result) => {
+//                 if (err) {
+//                     console.log(err);
+//                 } else {
+//                     res.send("Values inserted");
+//                 }
+//             }
+//         );
+//     } catch (error){
 
-    }
-});
+//     }
+// });
 
 // app.post('/api/addTeams', async (req, res) => {
 //     // let name = "Marcus Hutchings";
@@ -141,6 +151,23 @@ app.get('/api/getTeams', async (req, res) => {
     );
     // console.log(result);
     // res.send(resultSet);
+});
+
+app.get('/api/getStandings', async (req, res) => {
+    let resultSet = null;
+    const query = db.query(
+        "Select distinct t.city, t.name, t.primaryColor, t.secondaryColor, (s.wins + s.losses + s.overtimeLosses) As GP, s.wins, s.losses, s.overtimeLosses, (s.wins * 2 + s.overtimeLosses) As Points, s.goalsFor, s.goalsAgainst "+
+        "from teams t join standings s " +
+        "where t.teamId = s.teamId " +
+        "order by Points desc;",
+        (err, result) => {
+            if (err) {
+                console.log(err);
+            } else {
+                res.status(200).json(result)
+            }
+        }
+    );
 });
 
 app.get('/api/scores', async (req, res) => {
