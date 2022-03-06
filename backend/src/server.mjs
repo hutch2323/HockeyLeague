@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { application } from 'express';
 import bodyParser from 'body-parser';
 import fs from 'fs';
 import path from 'path';
@@ -8,6 +8,7 @@ import { MongoClient } from 'mongodb';
 import { request } from 'http';
 import multer from 'multer';
 import mysql from 'mysql2';
+import util from 'mysql2';
 import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -43,7 +44,7 @@ const host = 'localhost';
 const password = 'password1!';
 const database = 'league';
 
-const db = mysql.createConnection({
+const db = await mysql.createConnection({
     user: user,
     host: host,
     password: password,
@@ -153,13 +154,10 @@ app.get('/api/getTeams', async (req, res) => {
     // res.send(resultSet);
 });
 
-app.get('/api/getStandings', async (req, res) => {
+app.get('/api/getConferences', async (req, res) => {
     let resultSet = null;
     const query = db.query(
-        "Select distinct t.city, t.name, t.primaryColor, t.secondaryColor, (s.wins + s.losses + s.overtimeLosses) As GP, s.wins, s.losses, s.overtimeLosses, (s.wins * 2 + s.overtimeLosses) As Points, s.goalsFor, s.goalsAgainst "+
-        "from teams t join standings s " +
-        "where t.teamId = s.teamId " +
-        "order by Points desc;",
+        "Select * from conferences;",
         (err, result) => {
             if (err) {
                 console.log(err);
@@ -168,6 +166,145 @@ app.get('/api/getStandings', async (req, res) => {
             }
         }
     );
+});
+
+app.get('/api/getDivisions', async (req, res) => {
+    let resultSet = null;
+    const query = db.query(
+        "Select * from divisions;",
+        (err, result) => {
+            if (err) {
+                console.log(err);
+            } else {
+                res.status(200).json(result)
+            }
+        }
+    );
+    // db.close();
+});
+
+const getConferences = async () => {
+    return new Promise((resolve, reject) => {
+        db.query(
+            "Select * from conferences;",
+            (err, result) => {
+                if (err) {
+                    return reject(err)
+                } else {
+                   return resolve(result)
+                }
+            }
+        );
+    });
+};
+
+const getDivisions = async () => {
+    return new Promise((resolve, reject) => {
+        db.query(
+            "Select * from divisions;",
+            (err, result) => {
+                if (err) {
+                    return reject(err)
+                } else {
+                   return resolve(result)
+                }
+            }
+        );
+    });
+};
+
+const sortedStandings = async (sortParameter="", value=0) => {
+    // parameter = "t." + parameter;
+    // console.log("parameter: " + parameter);
+    let queryString = "";
+    if (sortParameter === "conference"){
+        queryString = "Select distinct t.city, t.name, t.primaryColor, t.secondaryColor, (s.wins + s.losses + s.overtimeLosses) As GP, s.wins, s.losses, s.overtimeLosses, (s.wins * 2 + s.overtimeLosses) As Points, s.goalsFor, s.goalsAgainst "+
+            "from teams t join standings s " +
+            "where t.teamId = s.teamId " +
+            "AND t.conferenceId = ? " +
+            "order by Points desc;";
+    } else if (sortParameter === "division") { // sorting by division
+        queryString = "Select distinct t.city, t.name, t.primaryColor, t.secondaryColor, (s.wins + s.losses + s.overtimeLosses) As GP, s.wins, s.losses, s.overtimeLosses, (s.wins * 2 + s.overtimeLosses) As Points, s.goalsFor, s.goalsAgainst "+
+            "from teams t join standings s " +
+            "where t.teamId = s.teamId " +
+            "AND t.divisionId = ? " +
+            "order by Points desc;";
+    } else {
+        queryString = "Select distinct t.city, t.name, t.primaryColor, t.secondaryColor, (s.wins + s.losses + s.overtimeLosses) As GP, s.wins, s.losses, s.overtimeLosses, (s.wins * 2 + s.overtimeLosses) As Points, s.goalsFor, s.goalsAgainst "+
+            "from teams t join standings s " +
+            "where t.teamId = s.teamId " +
+            "order by Points desc;";
+    }
+    
+    console.log("value: " + value);
+    return new Promise((resolve, reject) => {
+        db.query(
+            queryString,
+            [value],
+            (err, result) => {
+                if (err) {
+                    return reject(err)
+                } else {
+                    console.log(result);
+                   return resolve(result)
+                }
+            }
+        );
+    });
+};
+
+app.get('/api/getStandings', async (req, res) => {
+    const result = await sortedStandings()
+    res.status(200).json(result)
+    // db.close();
+});
+
+app.get('/api/getConferenceStandings', async (req, res) => {
+    const conferences = await getConferences();  
+    let conferenceStandings = [];
+    
+    for (let conference of conferences){
+        console.log(conference.name);
+        let teamStandings = await sortedStandings("conference", conference.conferenceId);
+        conferenceStandings.push({
+            conferenceId: conference.conferenceId,
+            name: conference.name,
+            league: conference.leagueId,
+            standings: [...teamStandings]
+        });
+    }
+
+    console.log(conferenceStandings)
+    res.status(200).json(conferenceStandings);
+});
+
+app.get('/api/getDivisionStandings', async (req, res) => {
+    const conferences = await getConferences();
+    const divisions = await getDivisions();
+    let divisionByConference = [];  
+    
+    for (let conference of conferences){
+        let divisionStandings = [];
+        for (let division of divisions){
+            if (division.conferenceId === conference.conferenceId){
+                let teamStandings = await sortedStandings("division", division.divisionId);
+                divisionStandings.push({
+                    divisionId: division.divisionId,
+                    name: division.name,
+                    standings: [...teamStandings]
+                });
+            }
+        }
+        divisionByConference.push({
+            conferenceId: conference.conferenceId,
+            name: conference.name,
+            league: conference.leagueId,
+            divisions: [...divisionStandings]
+        })
+    }
+
+    console.log(divisionByConference)
+    res.status(200).json(divisionByConference);
 });
 
 app.get('/api/scores', async (req, res) => {
